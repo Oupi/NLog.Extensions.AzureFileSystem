@@ -24,10 +24,6 @@ jobs:
         with:
           dotnet-version: 3.0.100
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-    
-      # dotnet build
-      - name: Build with dotnet
-        run: dotnet build --configuration Release --user lucianaparaschivei --password ${{ secrets.GITHUB_TOKEN }}
 
       - name: Package
         run : dotnet pack --configuration Release --user lucianaparaschivei --password ${{ secrets.GITHUB_TOKEN }}
