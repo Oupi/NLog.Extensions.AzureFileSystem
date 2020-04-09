@@ -28,7 +28,7 @@ before_build:
       Update-AppveyorBuild -Version "Build $env:APPVEYOR_BUILD_NUMBER - Commit $currentCommitHash - Tag v$mostRecentVersion"
 build_script:
   - ps: |
-        nuget sources add -Name "nuget" -Source "https://api.nuget.org/v3/index.json" -username "Lucian_Aparaschivei" -password "$env:NUGET_API_KEY"
+        nuget sources add -Name "nuget" -Source "https://api.nuget.org/v3/index.json" -username "Lucian_Aparaschivei" -password "oy2a67zazeb3hhpq4nkawxxmggumsf7ejinyupfbijhluu"
         dotnet pack --configuration Release
         dotnet nuget push "bin/Release/NLog.Extensions.AzureFileSystem.1.0.0.nupkg" --source "nuget" 
         if ($LastExitCode -ne 0) { exit $LastExitCode }
