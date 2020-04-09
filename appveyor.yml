@@ -28,14 +28,7 @@ before_build:
       Update-AppveyorBuild -Version "Build $env:APPVEYOR_BUILD_NUMBER - Commit $currentCommitHash - Tag v$mostRecentVersion"
 build_script:
   - ps: |
-      if ($env:APPVEYOR_REPO_TAG -ne 'true') {
-          .\build\scripts\bootstrap.ps1 '--target=NuGetPack' "--softwareVersion=$env:SW_VER" "--buildNumber=$env:APPVEYOR_BUILD_NUMBER"
-      }
-      else {
-          .\build\scripts\bootstrap.ps1 '--target=NuGetPush' "--softwareVersion=$env:SW_VER" '--nuGetSource=https://api.nuget.org/v3/index.json' "--nuGetApiKey=$env:NUGET_API_KEY"
-      }
-      if ($LastExitCode -ne 0) { exit $LastExitCode }
-after_build:
-  - ps: |
-      .\build\scripts\bootstrap.ps1 '--target=ZipArtifacts'
-      Push-AppveyorArtifact .\build\artifacts\artifacts.zip -FileName "artifacts_$env:APPVEYOR_BUILD_ID.zip"
+        nuget sources add -Name "nuget" -Source "https://api.nuget.org/v3/index.json" -username "Lucian_Aparaschivei" -password $env:NUGET_API_KEY
+        dotnet pack --configuration Release
+        dotnet nuget push "bin/Release/NLog.Extensions.AzureFileSystem.1.0.0.nupkg" --source "nuget" 
+        if ($LastExitCode -ne 0) { exit $LastExitCode }
