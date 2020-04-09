@@ -23,7 +23,15 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 3.0.100
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
     
-      # dotnet build and publish
+      # dotnet build
       - name: Build with dotnet
         run: dotnet build --configuration Release
+
+      - name: Package
+        run : dotnet pack --configuration Release
+
+      - name: Push package
+        run : dotnet nuget push "bin/Release/NLog.Extensions.AzureFileSystem.1.0.0.nupkg" --source "github"
+          
