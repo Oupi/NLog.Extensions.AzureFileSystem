@@ -26,7 +26,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Package
-        run : dotnet pack --configuration Release --user lucianaparaschivei --password ${{ secrets.GITHUB_TOKEN }}
+        run : dotnet pack --configuration Release
 
       - name: Push package
         run : dotnet nuget push "bin/Release/NLog.Extensions.AzureFileSystem.1.0.0.nupkg" --source "github" --user lucianaparaschivei --password ${{ secrets.GITHUB_TOKEN }}
