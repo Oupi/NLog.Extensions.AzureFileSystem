@@ -26,9 +26,11 @@ before_build:
       $currentCommitHash = git rev-parse --short HEAD
       Set-AppveyorBuildVariable -Name SW_VER -Value $mostRecentVersion
       Update-AppveyorBuild -Version "Build $env:APPYOR_BUILD_NUMBER VE- Commit $currentCommitHash - Tag v$mostRecentVersion"
+      write-host "Build =  $env:APPYOR_BUILD_NUMBER" -foregroundcolor Cyan
+      write-host "Nuget key =  $env:NUGET_API_KEY" -foregroundcolor Cyan
 build_script:
   - ps: |
         dotnet build NLog.Extensions.AzureFileSystem.sln -c Release --version-suffix=$env:APPYOR_BUILD_NUMBER
         dotnet pack --configuration Release
-        dotnet nuget push "bin/Release/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "$env:NUGET_API_KEY"
+        dotnet nuget push "bin/Release/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key $env:NUGET_API_KEY
         if ($LastExitCode -ne 0) { exit $LastExitCode }
