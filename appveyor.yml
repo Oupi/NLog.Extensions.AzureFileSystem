@@ -2,6 +2,7 @@
 image: Visual Studio 2019
 skip_branch_with_pr: true
 environment:
+  BUILDVERSION: ""
   NUGET_API_KEY:
     secure: oy2a67zazeb3hhpq4nkawxxmggumsf7ejinyupfbijhluu
 install:
@@ -26,12 +27,11 @@ before_build:
       $currentCommitHash = git rev-parse --short HEAD
       Set-AppveyorBuildVariable -Name SW_VER -Value $mostRecentVersion
       Update-AppveyorBuild -Version "Build $env:APPYOR_BUILD_NUMBER VE- Commit $currentCommitHash - Tag v$mostRecentVersion"
-  - ps: write-host "Build =  $env:APPYOR_BUILD_NUMBER" -foregroundcolor Cyan
-  - ps: write-host "Nuget key =  $env:NUGET_API_KEY" -foregroundcolor Cyan
+      $env:BUILDVERSION = "1.0.$env:APPYOR_BUILD_NUMBER"     
 build_script:
   - ps: |
-        dotnet build NLog.Extensions.AzureFileSystem.sln -c Release --version-suffix=$env:APPYOR_BUILD_NUMBER /p:Version="1.2.3"
-        dotnet pack --configuration Release --version-suffix=$env:APPYOR_BUILD_NUMBER --include-symbols -o .\artifacts --no-build /p:Version="1.2.3"
+        dotnet build NLog.Extensions.AzureFileSystem.sln -c Release --version-suffix=$env:APPYOR_BUILD_NUMBER /p:Version=$env:BUILDVERSION
+        dotnet pack --configuration Release --version-suffix=$env:APPYOR_BUILD_NUMBER --include-symbols -o .\artifacts --no-build /p:Version=$env:BUILDVERSION
         #dotnet nuget push "bin/Release/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key $env:NUGET_API_KEY
         if ($LastExitCode -ne 0) { exit $LastExitCode }
 
