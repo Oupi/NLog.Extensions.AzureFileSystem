@@ -26,10 +26,10 @@ before_build:
       $mostRecentVersion = $mostRecentTag.Substring(1)
       $currentCommitHash = git rev-parse --short HEAD
       Set-AppveyorBuildVariable -Name SW_VER -Value $mostRecentVersion
-      Update-AppveyorBuild -Version "Build $env:APPYOR_BUILD_NUMBER VE- Commit $currentCommitHash - Tag v$mostRecentVersion"
-      $env:BUILDVERSION = "1.0.$env:APPYOR_BUILD_NUMBER"     
+      Update-AppveyorBuild -Version "Build $env:APPVEYOR_BUILD_NUMBER VE- Commit $currentCommitHash - Tag v$mostRecentVersion"
 build_script:
   - ps: |
+        $env:BUILDVERSION = "1.0.$env:APPVEYOR_BUILD_NUMBER"
         dotnet build NLog.Extensions.AzureFileSystem.sln -c Release --version-suffix=$env:APPYOR_BUILD_NUMBER /p:Version=$env:BUILDVERSION
         dotnet pack --configuration Release --version-suffix=$env:APPYOR_BUILD_NUMBER --include-symbols -o .\artifacts --no-build /p:Version=$env:BUILDVERSION
         #dotnet nuget push "bin/Release/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key $env:NUGET_API_KEY
