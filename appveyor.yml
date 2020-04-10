@@ -30,8 +30,8 @@ before_build:
   - ps: write-host "Nuget key =  $env:NUGET_API_KEY" -foregroundcolor Cyan
 build_script:
   - ps: |
-        dotnet build NLog.Extensions.AzureFileSystem.sln -c Release --version-suffix=$env:APPYOR_BUILD_NUMBER
-        dotnet pack --configuration Release --version-suffix=$env:APPYOR_BUILD_NUMBER --include-symbols -o .\artifacts --no-build
+        dotnet build NLog.Extensions.AzureFileSystem.sln -c Release --version-suffix=$env:APPYOR_BUILD_NUMBER /p:Version="1.2.3"
+        dotnet pack --configuration Release --version-suffix=$env:APPYOR_BUILD_NUMBER --include-symbols -o .\artifacts --no-build /p:Version="1.2.3"
         #dotnet nuget push "bin/Release/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key $env:NUGET_API_KEY
         if ($LastExitCode -ne 0) { exit $LastExitCode }
 
