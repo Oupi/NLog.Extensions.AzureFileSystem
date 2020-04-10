@@ -25,9 +25,26 @@ before_build:
       $mostRecentVersion = $mostRecentTag.Substring(1)
       $currentCommitHash = git rev-parse --short HEAD
       Set-AppveyorBuildVariable -Name SW_VER -Value $mostRecentVersion
-      Update-AppveyorBuild -Version "Build $env:APPVEYOR_BUILD_NUMBER - Commit $currentCommitHash - Tag v$mostRecentVersion"
+      Update-AppveyorBuild -Version "Build $env:APPYOR_BUILD_NUMBER VE- Commit $currentCommitHash - Tag v$mostRecentVersion"
+  - ps: write-host "Build =  $env:APPYOR_BUILD_NUMBER" -foregroundcolor Cyan
+  - ps: write-host "Nuget key =  $env:NUGET_API_KEY" -foregroundcolor Cyan
 build_script:
   - ps: |
-        dotnet pack --configuration Release
-        dotnet nuget push "bin/Release/NLog.Extensions.AzureFileSystem.1.0.0.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "oy2a67zazeb3hhpq4nkawxxmggumsf7ejinyupfbijhluu"
+        dotnet build NLog.Extensions.AzureFileSystem.sln -c Release --version-suffix=$env:APPYOR_BUILD_NUMBER
+        dotnet pack --configuration Release --version-suffix=$env:APPYOR_BUILD_NUMBER --include-symbols -o ..\..\artifacts
+        #dotnet nuget push "bin/Release/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key $env:NUGET_API_KEY
         if ($LastExitCode -ne 0) { exit $LastExitCode }
+
+nuget:
+  disable_publish_on_pr: true
+
+artifacts:
+  - path: 'artifacts\*.nupkg'
+  - path: 'artifacts\*.snupkg'
+
+deploy:
+- provider: NuGet
+  api_key:
+    secure: oy2a67zazeb3hhpq4nkawxxmggumsf7ejinyupfbijhluu
+  on:
+    branch: master
