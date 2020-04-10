@@ -32,7 +32,7 @@ build_script:
         $env:BUILDVERSION = "1.0.$env:APPVEYOR_BUILD_NUMBER"
         dotnet build NLog.Extensions.AzureFileSystem.sln -c Release --version-suffix=$env:APPVEYOR_BUILD_NUMBER /p:Version=$env:BUILDVERSION
         dotnet pack --configuration Release --version-suffix=$env:APPVEYOR_BUILD_NUMBER --include-symbols -o .\artifacts --no-build /p:Version=$env:BUILDVERSION
-        #dotnet nuget push "bin/Release/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key $env:NUGET_API_KEY
+        #dotnet nuget push ".\artifacts\**\*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key $env:NUGET_API_KEY
         if ($LastExitCode -ne 0) { exit $LastExitCode }
 
 nuget:
@@ -46,8 +46,7 @@ artifacts:
 
 deploy:
 - provider: NuGet
-  api_key:
-    secure: oy2a67zazeb3hhpq4nkawxxmggumsf7ejinyupfbijhluu
+  api_key: oy2a67zazeb3hhpq4nkawxxmggumsf7ejinyupfbijhluu
   skip_symbols: true
   on:
     branch: master
