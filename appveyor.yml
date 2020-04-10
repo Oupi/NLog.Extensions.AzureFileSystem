@@ -31,7 +31,7 @@ before_build:
 build_script:
   - ps: |
         dotnet build NLog.Extensions.AzureFileSystem.sln -c Release --version-suffix=$env:APPYOR_BUILD_NUMBER
-        dotnet pack --configuration Release --version-suffix=$env:APPYOR_BUILD_NUMBER
+        dotnet pack --configuration Release --version-suffix=$env:APPYOR_BUILD_NUMBER --include-symbols -o ..\..\artifacts
         #dotnet nuget push "bin/Release/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key $env:NUGET_API_KEY
         if ($LastExitCode -ne 0) { exit $LastExitCode }
 
