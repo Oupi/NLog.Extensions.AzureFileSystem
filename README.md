@@ -6,3 +6,22 @@ NLog target for Azure file system (file shares)
 [![NuGet version (NLog.Extensions.AzureFileSystem)](https://img.shields.io/nuget/v/NLog.Extensions.AzureFileSystem.svg?style=flat-square)](https://www.nuget.org/packages/NLog.Extensions.AzureFileSystem/)
 
 ![Nuget download (NLog.Extensions.AzureFileSystem)](https://img.shields.io/nuget/dt/NLog.Extensions.AzureFileSystem)
+
+
+## Sample Configuration
+
+```xml
+<extensions>
+  <add assembly="NLog.Extensions.AzureFileSystem"/>
+</extensions>
+
+<targets async="true">
+    <target type="AzureFileSystem"
+            name="ownFile"
+            layout="${verbose}"
+            StorageConnectionString="DefaultEndpointsProtocol=https;AccountName=;AccountKey=;EndpointSuffix="
+            AzureFileShareName="demo-app"
+            AzureFileShareFolder="ownLogs"
+            AzureFileName="nlog-own-${processid}-${shortdate}.log" />
+</targets>
+```
