@@ -17,7 +17,7 @@ using NLog.Targets;
 namespace NLog.Extensions.AzureFileSystem
 {
     [Target("AzureFileSystemAsync")]
-    public class AzureFileSystemAsyncTaskTarget : AsyncTaskTarget
+    public class AzureFileSystemAsyncTaskTarget : AsyncTaskTarget, IAzureFileSystemTarget
     {
         private readonly ReaderWriterLockSlim _fileLock = new ReaderWriterLockSlim();
         private CloudFileShare _fileShare;
@@ -68,7 +68,7 @@ namespace NLog.Extensions.AzureFileSystem
 
             try
             {
-                await InitializeFileShareAsync(folderName).ConfigureAwait(false);
+                _fileShare = await FileShareHelper.InitializeFileShareAsync(this, _fileShare, folderName, fileName);
                 await LogMessageToAzureFileAsync(logMessage, folderName, fileName).ConfigureAwait(false);
             }
             catch (StorageException ex)
@@ -79,28 +79,6 @@ namespace NLog.Extensions.AzureFileSystem
         }
 
         #endregion
-
-        private async Task InitializeFileShareAsync(string folderName)
-        {
-            if (_fileShare == null)
-            {
-                _fileShare = await CreateStorageAccountFromConnectionStringAsync(StorageConnectionString)
-                    .ConfigureAwait(false);
-            }
-
-            var rootDir = _fileShare.GetRootDirectoryReference();
-            // Get a reference to the directory.
-            var folder = rootDir.GetDirectoryReference(folderName);
-            var folderExists = await folder.ExistsAsync().ConfigureAwait(false);
-
-            // Ensure that the directory exists.
-            if (!folderExists)
-            {
-                await folder.CreateAsync().ConfigureAwait(false);
-
-                InternalLogger.Trace($"AzureFileSystemTarget - Folder {folderName} Initialized");
-            }
-        }
 
         private async Task LogMessageToAzureFileAsync(string logMessage, string folderName, string fileName)
         {
@@ -144,43 +122,6 @@ namespace NLog.Extensions.AzureFileSystem
                     _fileLock.ExitWriteLock();
                 }
             }
-        }
-
-        private async Task<CloudFileShare> CreateStorageAccountFromConnectionStringAsync(string storageConnectionString)
-        {
-            CloudFileShare fileShare;
-            try
-            {
-                var storageAccount = CloudStorageAccount.Parse(storageConnectionString);
-                InternalLogger.Trace("AzureFileSystemTarget - Storage Connection Initialized");
-
-                // Create a CloudFileClient object for credentialed access to Azure Files.
-                var fileClient = storageAccount.CreateCloudFileClient();
-                InternalLogger.Trace("AzureFileSystemTarget - File client Connection Initialized");
-
-                // Get a reference to the file share we created previously.
-                fileShare = fileClient.GetShareReference(AzureFileShareName);
-                InternalLogger.Trace("AzureFileSystemTarget - File client Connection Initialized");
-
-                var fileShareExits = await fileShare.ExistsAsync().ConfigureAwait(false);
-                if (!fileShareExits)
-                {
-                    InternalLogger.Error("AzureFileSystemTarget(Name={0}): failed init: {1}",
-                        $"There is no share with name {AzureFileShareName} defined in storage account.");
-                    throw new ArgumentException(nameof(AzureFileShareName));
-                }
-
-                InternalLogger.Trace("AzureFileSystemTarget - File share Connection Initialized");
-            }
-            catch (Exception ex)
-            {
-                InternalLogger.Error(ex, "AzureFileSystemTarget(Name={0}): failed init: {1}",
-                    Name,
-                    "Invalid storage account information provided. Please confirm the AccountName and AccountKey are valid in the nlog config file.");
-                throw;
-            }
-
-            return fileShare;
         }
     }
 }
