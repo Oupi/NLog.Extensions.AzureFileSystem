@@ -33,7 +33,7 @@ namespace NLog.Extensions.AzureFileSystem
             var rootDir = _fileShare.GetRootDirectoryReference();
 
             // Get a reference to the directory.
-            var folder = rootDir.GetDirectoryReference(folderName);
+            var folder = string.IsNullOrWhiteSpace(folderName) ? rootDir : rootDir.GetDirectoryReference(folderName);
             var folderExists = await folder.ExistsAsync().ConfigureAwait(false);
 
             if (!folderExists)
@@ -117,7 +117,7 @@ namespace NLog.Extensions.AzureFileSystem
             {
                 var rootDir = _fileShare.GetRootDirectoryReference();
                 // Get a reference to the directory.
-                var folder = rootDir.GetDirectoryReference(folderName);
+                var folder = string.IsNullOrWhiteSpace(folderName) ? rootDir : rootDir.GetDirectoryReference(folderName);
                 var sourceFile = folder.GetFileReference(fileName);
                 var sourceFileExists = await sourceFile.ExistsAsync().ConfigureAwait(false);
                 var messageBytes = Encoding.UTF8.GetBytes(logMessage);
