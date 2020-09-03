@@ -20,7 +20,7 @@ namespace NLog.Extensions.AzureFileSystem
             this.target = target;
         }
 
-        private async Task InitializeFileShareAsync(string folderName)
+        private async Task<CloudFileDirectory> InitializeFolderAsync(string folderName)
         {
             if (_fileShare == null)
             {
@@ -54,6 +54,8 @@ namespace NLog.Extensions.AzureFileSystem
                     }
                 }
             }
+
+            return folder;
         }
         
         /// <summary>
@@ -106,8 +108,6 @@ namespace NLog.Extensions.AzureFileSystem
         }
         public async Task LogMessageToAzureFileAsync(string logMessage, string folderName, string fileName)
         {
-            await InitializeFileShareAsync(folderName);
-
             if (!_fileLock.IsWriteLockHeld)
             {
                 _fileLock.EnterWriteLock();
@@ -115,9 +115,7 @@ namespace NLog.Extensions.AzureFileSystem
 
             try
             {
-                var rootDir = _fileShare.GetRootDirectoryReference();
-                // Get a reference to the directory.
-                var folder = string.IsNullOrWhiteSpace(folderName) ? rootDir : rootDir.GetDirectoryReference(folderName);
+                var folder = await InitializeFolderAsync(folderName);
                 var sourceFile = folder.GetFileReference(fileName);
                 var sourceFileExists = await sourceFile.ExistsAsync().ConfigureAwait(false);
                 var messageBytes = Encoding.UTF8.GetBytes(logMessage);
