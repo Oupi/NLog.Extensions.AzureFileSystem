@@ -34,17 +34,15 @@ namespace NLog.Extensions.AzureFileSystem
 
             // Get a reference to the directory.
             var folder = string.IsNullOrWhiteSpace(folderName) ? rootDir : rootDir.GetDirectoryReference(folderName);
-            var folderExists = await folder.ExistsAsync().ConfigureAwait(false);
 
-            if (!folderExists)
+            if (!await folder.ExistsAsync().ConfigureAwait(false))
             {
                 var levels = folderName.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-                var currentLevel = string.Empty;
+                var currentLevel = levels[0];
 
                 for (int i = 0; i < levels.Length; i++)
                 {
-                    if (currentLevel == string.Empty) currentLevel = levels[i];
-                    else currentLevel += @"/" + levels[i];
+                    if (i > 0) currentLevel += @"/" + levels[i];
 
                     var currentFolder = rootDir.GetDirectoryReference(currentLevel);
                     if (!await currentFolder.ExistsAsync().ConfigureAwait(false))
