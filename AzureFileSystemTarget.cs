@@ -19,8 +19,12 @@ namespace NLog.Extensions.AzureFileSystem
     [Target("AzureFileSystem")]
     public class AzureFileSystemTarget : TargetWithLayout, IAzureFileSystemTarget
     {
-        private readonly ReaderWriterLockSlim _fileLock = new ReaderWriterLockSlim();
-        private CloudFileShare _fileShare;
+        private FileShareManager _fileShareManager;
+
+        public AzureFileSystemTarget()
+        {
+            _fileShareManager = new FileShareManager(this);
+        }
 
         /// <summary>
         ///     Azure storage connection string
@@ -46,6 +50,9 @@ namespace NLog.Extensions.AzureFileSystem
         [RequiredParameter]
         public Layout AzureFileName { get; set; }
 
+        #region Overrides of TargetWithLayout
+
+        /// <inheritdoc />
         protected override void Write(LogEventInfo logEvent)
         {
             if (string.IsNullOrEmpty(logEvent.Message))
@@ -60,8 +67,7 @@ namespace NLog.Extensions.AzureFileSystem
 
             try
             {
-                _fileShare = FileShareHelper.InitializeFileShare(this, _fileShare, folderName, fileName);
-                LogMessageToAzureFile(logMessage, folderName, fileName);
+                _fileShareManager.LogMessageToAzureFile(logMessage, folderName, fileName);
             }
             catch (StorageException ex)
             {
@@ -71,49 +77,6 @@ namespace NLog.Extensions.AzureFileSystem
             }
         }
 
-
-
-        private void LogMessageToAzureFile(string logMessage, string folderName, string fileName)
-        {
-            var rootDir = _fileShare.GetRootDirectoryReference();
-            // Get a reference to the directory.
-            var folder = rootDir.GetDirectoryReference(folderName);
-            var sourceFile = folder.GetFileReference(fileName);
-            var sourceFileExists = sourceFile.ExistsAsync().GetAwaiter().GetResult();
-            var messageBytes = Encoding.UTF8.GetBytes(logMessage);
-
-            if (!_fileLock.IsWriteLockHeld)
-            {
-                _fileLock.EnterWriteLock();
-            }
-
-            try
-            {
-                //Ensure that the file exists.
-                if (!sourceFileExists)
-                {
-                    sourceFile.CreateAsync(messageBytes.Length).GetAwaiter().GetResult();
-
-                    InternalLogger.Trace($"AzureFileSystemTarget - File {fileName} Created");
-                }
-                else
-                {
-                    sourceFile.ResizeAsync(sourceFile.Properties.Length + messageBytes.Length).GetAwaiter().GetResult();
-                }
-
-                using (var cloudStream = sourceFile.OpenWriteAsync(null).GetAwaiter().GetResult())
-                {
-                    cloudStream.Seek(messageBytes.Length * -1, SeekOrigin.End);
-                    cloudStream.WriteAsync(messageBytes, 0, messageBytes.Length).GetAwaiter().GetResult();
-                }
-            }
-            finally
-            {
-                if (_fileLock.IsWriteLockHeld)
-                {
-                    _fileLock.ExitWriteLock();
-                }
-            }
-        }
+        #endregion
     }
 }
