@@ -19,7 +19,7 @@ namespace NLog.Extensions.AzureFileSystem
     [Target("AzureFileSystemAsync")]
     public class AzureFileSystemAsyncTaskTarget : AsyncTaskTarget, IAzureFileSystemTarget
     {
-        private FileShareManager _fileShareManager;
+        private readonly FileShareManager _fileShareManager;
 
         public AzureFileSystemAsyncTaskTarget()
         {

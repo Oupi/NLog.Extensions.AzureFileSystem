@@ -19,7 +19,7 @@ namespace NLog.Extensions.AzureFileSystem
     [Target("AzureFileSystem")]
     public class AzureFileSystemTarget : TargetWithLayout, IAzureFileSystemTarget
     {
-        private FileShareManager _fileShareManager;
+        private readonly FileShareManager _fileShareManager;
 
         public AzureFileSystemTarget()
         {
